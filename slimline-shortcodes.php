@@ -5,7 +5,7 @@
  * Description: Helper shortcodes. These were originally bundled with Slimline themes, but were removed for intruding on plugin territory.
  * Author: Michael Dozark
  * Author URI: http://www.michaeldozark.com/
- * Version: 0.1.1
+ * Version: 0.1.2
  * Text Domain: slimline_shortcodes
  * Domain Path: /lang
  * License: GNU General Public License version 2.0
@@ -144,11 +144,11 @@ function slimline_shortcodes_mail( $atts, $content = '' ) {
  */
 function slimline_shortcodes_process_atts( $atts ) {
 
-	$atts = array_map( 'esc_attr', $atts ) // make sure to escape attribute variables
+	$atts = array_map( 'esc_attr', $atts ); // make sure to escape attribute variables
 
 	// set class and id strings if not empty
-	$atts[ 'class' ] = ( $atts[ 'class' ] ? "class='{$atts[ 'class' ]}'}" : '' );
-	$atts[ 'id' ] = ( $atts[ 'id' ] ? "id='{$atts[ 'id' ]}'}" : '' );
+	$atts[ 'class' ] = ( $atts[ 'class' ] ? "class='{$atts[ 'class' ]}'" : '' );
+	$atts[ 'id' ] = ( $atts[ 'id' ] ? "id='{$atts[ 'id' ]}'" : '' );
 
 	return $atts;
 }
@@ -170,7 +170,7 @@ function slimline_shortcodes_process_atts( $atts ) {
  */
 function slimline_shortcodes_tel( $atts, $content = '' ) {
 
-	if ( ! is_mobile() )
+	if ( ! wp_is_mobile() )
 		return $content; // tel links can produce errors in some desktop browsers
 
 	$atts = shortcode_atts(
