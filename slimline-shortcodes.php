@@ -5,7 +5,7 @@
  * Description: Helper shortcodes. These were originally bundled with Slimline themes, but were removed for intruding on plugin territory.
  * Author: Michael Dozark
  * Author URI: http://www.michaeldozark.com/
- * Version: 0.1.0
+ * Version: 0.1.1
  * Text Domain: slimline_shortcodes
  * Domain Path: /lang
  * License: GNU General Public License version 2.0
@@ -60,29 +60,21 @@ function slimline_shortcodes_init() {
  */
 function slimline_shortcodes_google_map( $atts ) {
 
-	extract(
-		shortcode_atts(
-			array(
-				'class'  => '',
-				'height' => 350,
-				'id'     => '',
-				'src'    => '',
-				'text'   => __( 'View Larger Map', 'slimline_shortcodes' );
-				'width'  => 425
-			), $atts
-		)
+	$atts = shortcode_atts(
+		array(
+			'class'  => '',
+			'height' => 350,
+			'id'     => '',
+			'src'    => '',
+			'text'   => __( 'View Larger Map', 'slimline_shortcodes' );
+			'width'  => 425
+		), $atts
 	);
+
+	extract( slimline_shortcodes_process_atts( $atts ) );
 
 	if ( empty( $src ) )
 		return ''; // return empty string if no src given since there won't be a map to embed
-
-	/**
-	 * Clean up extracted attributes for use in the returned HTML string.
-	 */
-
-	// set class and id strings if any
-	$class = ( $class ? "class='{$class}'}" : '' );
-	$id = ( $class ? "id='{$id}'}" : '' );
 
 	// strip px from height and width so we can use them for iframe attributes
 	$height = str_replace( 'px', '', $height );
@@ -91,9 +83,6 @@ function slimline_shortcodes_google_map( $atts ) {
 	// add px in to height and width if they are not percent-based. Used for the iframe's inline CSS.
 	$style_height = ( strpos( $height, '%' ) ? $height : "{$height}px" );
 	$style_width = ( strpos( $width, '%' ) ? $width : "{$width}px" );
-
-	// escape title text
-	$title = esc_attr( ( $title ? $title : $text ) );
 
 	/**
 	 * Return HTML string
@@ -109,15 +98,19 @@ function slimline_shortcodes_google_map( $atts ) {
  * slimline_shortcodes_mail shortcode
  *
  * Shortcode for transparent name mangling on an email address. Accepted attibutes are:
- * class  : CSS class or classes to add to the anchor link
- * id     : ID attribute for the anchor link
- * title  : The title attribute for the link. Defaults to "{$content}"
+ * class : CSS class or classes to add to the anchor link
+ * id    : ID attribute for the anchor link
+ * text  : Text to use for link if not the email address. Defaults to "{$content}"
+ * title : The title attribute for the link. Defaults to "{$content}"
  * 
  * @param array $atts Shortcode attributes
- * @param string $content Content enclosed between the [slimline_mail] shortcode tags
+ * @param string $content Content enclosed between the [slimline_mail] shortcode tags. Should be the email address.
  * @return string HTML mailto link
  */
-function slimline_shortcodes_mail( $atts, $content = null ) {
+function slimline_shortcodes_mail( $atts, $content = '' ) {
+
+	if ( ! $content )
+		return $content; // no need to continue if no email address given.
 
 	$encoded_email = ''; // setup empty string so we don't produce PHP notices
 
@@ -126,30 +119,47 @@ function slimline_shortcodes_mail( $atts, $content = null ) {
 	for ( $i = 0; $i < $strlen; $i++ )
 		$encoded_email .= "&#" . ord( $content[ $i ] ) . ';';
 
-	extract(
-		shortcode_atts(
-			array(
-				'text'  => $encoded_email,
-				'title' => $encoded_email
-			), $atts
-		)
+	$atts = shortcode_atts(
+		array(
+			'class' => '',
+			'id'    => '',
+			'text'  => $encoded_email,
+			'title' => $encoded_email
+		), $atts
 	);
 
-	// set class and id strings if any
-	$class = ( $class ? "class='{$class}'}" : '' );
-	$id = ( $class ? "id='{$id}'}" : '' );
+	extract( slimline_shortcodes_process_atts( $atts ) );
 
 	return "<a {$class} href='mailto:{$encoded_email}' {$id} title='{$title}'>{$text}</a>";
 
 }
 
 /**
- * slimline_shortcodes_tel_link shortcode
+ * slimline_shortcodes_process_atts helper function
+ *
+ * Sanitize variables, set class and id strings if any.
+ *
+ * @param array $atts Shortcode atts to process
+ * @since 0.1.1
+ */
+function slimline_shortcodes_process_atts( $atts ) {
+
+	$atts = array_map( 'esc_attr', $atts ) // make sure to escape attribute variables
+
+	// set class and id strings if not empty
+	$atts[ 'class' ] = ( $atts[ 'class' ] ? "class='{$atts[ 'class' ]}'}" : '' );
+	$atts[ 'id' ] = ( $atts[ 'id' ] ? "id='{$atts[ 'id' ]}'}" : '' );
+
+	return $atts;
+}
+
+/**
+ * slimline_shortcodes_tel shortcode
  *
  * Shortcode to produce tel links on mobile devices. Accepted attibutes are:
  * class  : CSS class or classes to add to the anchor link
  * id     : ID attribute for the anchor link
- * number : The href-formatted phone number. Defaults to a string-replaced version of $content
+ * number : The href-formatted phone number. Defaults to $content
  * title  : The title attribute for the link. Defaults to "Dial {$content}"
  *
  * @param array $atts Shortcode attributes
@@ -158,25 +168,26 @@ function slimline_shortcodes_mail( $atts, $content = null ) {
  * @uses is_mobile() to detect mobile device
  * @since 0.1.0
  */
-function slimline_tel_link_shortcode( $atts, $content = '' ) {
+function slimline_shortcodes_tel( $atts, $content = '' ) {
 
 	if ( ! is_mobile() )
 		return $content; // tel links can produce errors in some desktop browsers
 
-	extract(
-		shortcode_atts(
-			array(
-				'class'  => '',
-				'id'     => '',
-				'number' => str_replace( array( '(', ')', '-', ' ' ), '', $content ),
-				'title'  => __( sprintf( 'Dial %1$s', $content ), 'slimline' )
-			), $atts
-		)
+	$atts = shortcode_atts(
+		array(
+			'class'  => '',
+			'id'     => '',
+			'number' => $content,
+			'title'  => __( sprintf( 'Dial %1$s', $content ), 'slimline' )
+		), $atts
 	);
 
-	// set class and id strings if any
-	$class = ( $class ? "class='{$class}'}" : '' );
-	$id = ( $class ? "id='{$id}'}" : '' );
+	extract( slimline_shortcodes_process_atts( $atts ) );
+
+	$number = preg_replace( '/[^\d+]/', '', $number ); // remove any non-standard characters from number
+
+	if ( ! $number )
+		return $content; // bail if no link href
 
 	return "<a {$class} href='tel:{$number}' {$id} title='{$title}'>{$content}</a>";
 }
