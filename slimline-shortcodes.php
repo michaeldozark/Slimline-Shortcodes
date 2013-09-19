@@ -66,7 +66,7 @@ function slimline_shortcodes_google_map( $atts ) {
 			'height' => 350,
 			'id'     => '',
 			'src'    => '',
-			'text'   => __( 'View Larger Map', 'slimline_shortcodes' );
+			'text'   => __( 'View Larger Map', 'slimline_shortcodes' ),
 			'width'  => 425
 		), $atts
 	);
