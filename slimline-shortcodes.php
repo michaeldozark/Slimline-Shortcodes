@@ -5,7 +5,7 @@
  * Description: Helper shortcodes. These were originally bundled with Slimline themes, but were removed for intruding on plugin territory.
  * Author: Michael Dozark
  * Author URI: http://www.michaeldozark.com/
- * Version: 0.1.2
+ * Version: 0.1.3
  * Text Domain: slimline_shortcodes
  * Domain Path: /lang
  * License: GNU General Public License version 2.0
@@ -26,7 +26,7 @@
  * Fire the initialization function. This should be the only instance of add_action that
  * is not contained within a defined function.
  */
-add_shortcode( 'init', 'slimline_shortcodes_init' );
+add_action( 'init', 'slimline_shortcodes_init' );
 
 /**
  * slimline_shortcodes_init function
