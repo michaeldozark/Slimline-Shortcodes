@@ -37,6 +37,10 @@ add_action( 'init', 'slimline_shortcodes_init' );
  */
 function slimline_shortcodes_init() {
 
+	// include the compatibility file in case user does not have a Slimline-compatible theme
+	if ( ! defined( 'SLIMLINE_VERSION' ) )
+		include( trailingslashit( plugins_dir_path( __FILE__ ) ) . 'inc/slimline-compatibility.php' );
+
 	add_shortcode( 'slimline_google_map', 'slimline_shortcodes_google_map' ); // add a simple Google map to a post
 	add_shortcode( 'slimline_mail', 'slimline_shortcodes_mail' ); // transparent name mangling to reduce spam
 	add_shortcode( 'slimline_tel', 'slimline_shortcodes_tel' ); // transform telephone numbers into links on mobile devices
@@ -87,11 +91,12 @@ function slimline_shortcodes_google_map( $atts ) {
 	/**
 	 * Return HTML string
 	 */
-	return "
+	$return = "
 		<iframe {$class} frameborder='0' height='{$height}' {$id} marginheight='0' marginwidth='0' scrolling='no' src='{$src}&output=embed' style='height: {$style_height}; width: {$style_width};' width='{$width}'></iframe><br />
 		<small><a href='{$src}' title='{$title}'>{$text}</a></small>
 	";
 
+	return slimline_apply_filters( 'slimline_google_map', $return, $atts );
 }
 
 /**
@@ -130,8 +135,9 @@ function slimline_shortcodes_mail( $atts, $content = '' ) {
 
 	extract( slimline_shortcodes_process_atts( $atts ) );
 
-	return "<a {$class} href='mailto:{$encoded_email}' {$id} title='{$title}'>{$text}</a>";
+	$return = "<a {$class} href='mailto:{$encoded_email}' {$id} title='{$title}'>{$text}</a>";
 
+	return slimline_apply_filters( 'slimline_mail', $return, $atts );
 }
 
 /**
@@ -189,5 +195,7 @@ function slimline_shortcodes_tel( $atts, $content = '' ) {
 	if ( ! $number )
 		return $content; // bail if no link href
 
-	return "<a {$class} href='tel:{$number}' {$id} title='{$title}'>{$content}</a>";
+	$return = "<a {$class} href='tel:{$number}' {$id} title='{$title}'>{$content}</a>";
+
+	return slimline_apply_filters( 'slimline_tel', $return, $atts );
 }
