@@ -5,7 +5,7 @@
  * Description: Helper shortcodes. These were originally bundled with Slimline themes, but were removed for intruding on plugin territory.
  * Author: Michael Dozark
  * Author URI: http://www.michaeldozark.com/
- * Version: 0.1.3
+ * Version: 0.2.0
  * Text Domain: slimline_shortcodes
  * Domain Path: /lang
  * License: GNU General Public License version 2.0
