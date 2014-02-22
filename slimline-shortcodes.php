@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Slimline Shortcodes
  * Plugin URI: http://www.michaeldozark.com/slimline/shortcodes/
- * Description: Helper shortcodes. These were originally bundled with Slimline themes, but were removed for intruding on plugin territory.
+ * Description: Helper shortcodes for inserting mailto links, tel links and Google Maps. These were originally bundled with Slimline themes, but were removed for intruding on plugin territory.
  * Author: Michael Dozark
  * Author URI: http://www.michaeldozark.com/
  * Version: 0.3.0
