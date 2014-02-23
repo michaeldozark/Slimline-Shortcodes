@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Slimline Shortcodes
  * Plugin URI: http://www.michaeldozark.com/slimline/shortcodes/
- * Description: Helper shortcodes for inserting mailto links, tel links and Google Maps. These were originally bundled with Slimline themes, but were removed for intruding on plugin territory.
+ * Description: Helper shortcodes for inserting mailto links, tel links and Google Maps.
  * Author: Michael Dozark
  * Author URI: http://www.michaeldozark.com/
  * Version: 0.3.0
@@ -23,7 +23,7 @@
  *
  * @package Slimline Shortcodes
  * @subpackage Core
- * @version 0.3.0
+ * @version 0.4.0
  * @author Michael Dozark <michael@michaeldozark.com>
  * @copyright Copyright (c) 2014, Michael Dozark
  * @link http://www.michaeldozark.com/slimline/shortcodes/
@@ -34,16 +34,16 @@
  * Fire the initialization function. This should be the only instance of add_action that
  * is not contained within a defined function.
  */
-add_action( 'init', 'slimline_shortcodes_init' );
+add_action( 'plugins_loaded', 'slimline_shortcodes_core' );
 
 /**
- * slimline_shortcodes_init function
+ * slimline_shortcodes_core function
  *
  * Initialize and configure the plugin.
  *
  * @since 0.1.0
  */
-function slimline_shortcodes_init() {
+function slimline_shortcodes_core() {
 
 	load_plugin_textdomain( 'slimline-shortcodes', false, trailingslashit( dirname( plugin_basename( __FILE__ ) ) ) . trailingslashit( 'lang' ) );
 
@@ -86,6 +86,7 @@ function slimline_shortcodes_check_units( $att ) {
  * @param string $content (Required) The URL of the map to embed. Should be enclosed between the [slimline_google_map] tags.
  * @return string HTML string containing the embedded iframe or empty if no content parameter passed.
  * @since 0.1.0
+ * @uses apply_filters() Calls `slimline_google_map` to filter the HTML output
  * @uses slimline_shortcodes_check_units() to check height and width attributes for units
  * @uses slimline_shortcodes_process_atts() to sanitize attributes
  */
@@ -119,7 +120,7 @@ function slimline_shortcodes_google_map( $atts, $content = '' ) {
 	// add css height and width to style attribute
 	$atts[ 'style' ] = "height: {$style_height}; width: {$style_width};" . $atts[ 'style' ];
 
-	extract( slimline_shortcodes_process_atts( $atts ) );
+	extract( slimline_shortcodes_process_atts( $atts, 'slimline_google_map' ) );
 
 	// set class, id, style and target strings for the link if not empty
 	$link_class = ( ! empty( $link_class ) : "class='{$link_class}'" : '' );
@@ -128,8 +129,8 @@ function slimline_shortcodes_google_map( $atts, $content = '' ) {
 	$link_target = ( ! empty( $link_target ) : "target='{$link_target}'" : '' );
 
 	// strip non-percentage units from height and width so we can use them for iframe attributes
-	$height = preg_replace( '/[^0-9|\%]/', '', $height );
-	$width = preg_replace( '/[^0-9|\%]/', '', $width );
+	$height = preg_replace( '/[^\d|\%]/', '', $height );
+	$width = preg_replace( '/[^\d|\%]/', '', $width );
 
 	// default title if empty
 	$title = ( ! empty( $title ) ? $title : $text );
@@ -142,7 +143,7 @@ function slimline_shortcodes_google_map( $atts, $content = '' ) {
 		<small><a {$link_class} href='{$src}' {$link_id} {$link_style} {$link_target} title='{$title}'>{$text}</a></small>
 	";
 
-	return apply_filters( 'slimline_google_map', $return, $atts );
+	return apply_filters( 'slimline_google_map', $return, $atts, $content );
 }
 
 /**
@@ -159,6 +160,7 @@ function slimline_shortcodes_google_map( $atts, $content = '' ) {
  * @param string $content (Required) Content enclosed between the [slimline_mail] shortcode tags. Should be the email address.
  * @return string HTML mailto link
  * @since 0.1.0
+ * @uses apply_filters() Calls `slimline_mail` to filter the HTML output
  * @uses slimline_shortcodes_process_atts() to sanitize attributes
  */
 function slimline_shortcodes_mail( $atts, $content = '' ) {
@@ -185,11 +187,11 @@ function slimline_shortcodes_mail( $atts, $content = '' ) {
 		), $atts
 	);
 
-	extract( slimline_shortcodes_process_atts( $atts ) );
+	extract( slimline_shortcodes_process_atts( $atts, 'slimline_mail' ) );
 
 	$return = "<a {$class} href='mailto:{$encoded_email}' {$id} title='{$title}'>{$text}</a>";
 
-	return apply_filters( 'slimline_mail', $return, $atts );
+	return apply_filters( 'slimline_mail', $return, $atts, $content );
 }
 
 /**
@@ -197,10 +199,13 @@ function slimline_shortcodes_mail( $atts, $content = '' ) {
  *
  * Sanitize variables, set class, id and style strings if any.
  *
- * @param array $atts Shortcode atts to process
+ * @param array $atts Shortcode attributes to process
+ * @param string $shortcode The shortcode the attributes are from. Useful when adding filters.
+ * @return array $process_atts Shortcode attributes after processing
  * @since 0.1.1
+ * @uses apply_filters() Calls `slimline_shortcodes_process_atts` and `slimline_shortcodes_process_atts-{$shortcode}` to filter the processed attributes before returning
  */
-function slimline_shortcodes_process_atts( $atts ) {
+function slimline_shortcodes_process_atts( $atts, $shortcode = 'none' ) {
 
 	$process_atts = array_map( 'esc_attr', $atts ); // make sure to escape attribute variables
 
@@ -209,7 +214,9 @@ function slimline_shortcodes_process_atts( $atts ) {
 	$process_atts[ 'id' ] = ( $process_atts[ 'id' ] ? "id='{$process_atts[ 'id' ]}'" : '' );
 	$process_atts[ 'style' ] = ( $process_atts[ 'style' ] ? "style='{$process_atts[ 'style' ]}'" : '' );
 
-	return apply_filters( 'slimline_shortcodes_process_atts', $process_atts, $atts );
+	$process_atts = apply_filters( 'slimline_shortcodes_process_atts', $process_atts, $atts ); // allow developers to override or add to default processing
+
+	return apply_filters( "slimline_shortcodes_process_atts-{$shortcode}", $process_atts, $atts );
 }
 
 /**
@@ -218,16 +225,18 @@ function slimline_shortcodes_process_atts( $atts ) {
  * Shortcode to produce tel links on mobile devices. Accepted attibutes are:
  * class  : CSS class or classes to add to the anchor link
  * id     : ID attribute for the anchor link
- * number : The href-formatted phone number. Defaults to $content
+ * number : The href-formatted phone number. Defaults to "{$content}"
  * style  : Additional style properties for the link
+ * text   : Text to use for link if not the email address. Defaults to "{$content}"
  * title  : The title attribute for the link. Defaults to "Dial {$content}"
  *
  * @param array $atts Shortcode attributes
- * @param string $content Content enclosed between the [slimline_tel] shortcode tags
+ * @param string $content Content enclosed between the [slimline_tel] shortcode tags. Should be the telephone number
  * @return string HTML tel link if a mobile device or $content if not a mobile device.
- * @uses wp_is_mobile() to detect mobile device
- * @uses slimline_shortcodes_process_atts() to sanitize attributes
  * @since 0.1.0
+ * @uses apply_filters() Calls `slimline_tel` to filter the HTML output
+ * @uses slimline_shortcodes_process_atts() to sanitize attributes
+ * @uses wp_is_mobile() to detect mobile device
  */
 function slimline_shortcodes_tel( $atts, $content = '' ) {
 
@@ -239,18 +248,19 @@ function slimline_shortcodes_tel( $atts, $content = '' ) {
 			'class'  => '',
 			'id'     => '',
 			'number' => $content,
+			'text'   => $content,
 			'title'  => sprintf( __( 'Dial %1$s', 'slimline-shortcodes' ), $content ),
 		), $atts
 	);
 
-	extract( slimline_shortcodes_process_atts( $atts ) );
+	extract( slimline_shortcodes_process_atts( $atts, 'slimline_tel' ) );
 
-	$number = preg_replace( '/[^\d+]/', '', $number ); // remove any non-standard characters from number
+	$number = preg_replace( '/[^\d|\+]/', '', $number ); // remove any non-standard characters from number
 
 	if ( ! $number )
 		return $content; // bail if no link href
 
-	$return = "<a {$class} href='tel:{$number}' {$id} title='{$title}'>{$content}</a>";
+	$return = "<a {$class} href='tel:{$number}' {$id} title='{$title}'>{$text}</a>";
 
-	return apply_filters( 'slimline_tel', $return, $atts );
+	return apply_filters( 'slimline_tel', $return, $atts, $content );
 }
