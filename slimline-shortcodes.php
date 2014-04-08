@@ -123,10 +123,10 @@ function slimline_shortcodes_google_map( $atts, $content = '' ) {
 	extract( slimline_shortcodes_process_atts( $atts, 'slimline_google_map' ) );
 
 	// set class, id, style and target strings for the link if not empty
-	$link_class = ( ! empty( $link_class ) : "class='{$link_class}'" : '' );
-	$link_id = ( ! empty( $link_id ) : "id='{$link_id}'" : '' );
-	$link_style = ( ! empty( $link_style ) : "style='{$link_style}'" : '' );
-	$link_target = ( ! empty( $link_target ) : "target='{$link_target}'" : '' );
+	$link_class = ( ! empty( $link_class ) ? "class='{$link_class}'" : '' );
+	$link_id = ( ! empty( $link_id ) ? "id='{$link_id}'" : '' );
+	$link_style = ( ! empty( $link_style ) ? "style='{$link_style}'" : '' );
+	$link_target = ( ! empty( $link_target ) ? "target='{$link_target}'" : '' );
 
 	// strip non-percentage units from height and width so we can use them for iframe attributes
 	$height = preg_replace( '/[^\d|\%]/', '', $height );
