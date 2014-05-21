@@ -30,6 +30,8 @@
  * @license http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  */
 
+if ( ! defined( 'ABSPATH' ) ) exit; // exit if accessed directly
+
 /**
  * Fire the initialization function. This should be the only instance of add_action that
  * is not contained within a defined function.
